@@ -17,6 +17,22 @@ A FastAPI-based application that provides AI-powered answers to fitness and heal
    ```bash
    pip install -r requirements.txt
    ```
+3. Set up your OpenAI API key:
+   ```bash
+   python setup.py
+   ```
+   
+   Or manually set the environment variable:
+   ```bash
+   # Windows (PowerShell)
+   [Environment]::SetEnvironmentVariable('OPENAI_API_KEY', 'your-key-here', 'User')
+   
+   # Windows (Command Prompt)
+   setx OPENAI_API_KEY your-key-here
+   
+   # Linux/Mac
+   export OPENAI_API_KEY=your-key-here
+   ```
 
 ## Usage
 

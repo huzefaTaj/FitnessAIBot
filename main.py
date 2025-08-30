@@ -15,9 +15,14 @@ class QuestionResponse(BaseModel):
     answer: str
     model_used: str
 
-# Initialize OpenAI client with static API key
-STATIC_API_KEY = ""
-client = OpenAI(api_key=STATIC_API_KEY)
+# Initialize OpenAI client with API key from environment variable
+STATIC_API_KEY = os.getenv("OPENAI_API_KEY")
+if not STATIC_API_KEY:
+    print("Warning: OPENAI_API_KEY environment variable not set. Please set it to use the API.")
+    print("You can set it by running: set OPENAI_API_KEY=your-api-key-here")
+    client = None
+else:
+    client = OpenAI(api_key=STATIC_API_KEY)
 
 @app.get("/")
 async def root():
@@ -34,7 +39,11 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "openai_configured": True}
+    return {
+        "status": "healthy", 
+        "openai_configured": STATIC_API_KEY is not None,
+        "message": "API is running" if STATIC_API_KEY else "API is running but OpenAI key not configured"
+    }
 
 @app.post("/ask", response_model=QuestionResponse)
 async def ask_question(request: QuestionRequest):
@@ -48,6 +57,13 @@ async def ask_question(request: QuestionRequest):
         QuestionResponse with the AI's answer
     """
     try:
+        # Check if OpenAI client is configured
+        if not client:
+            raise HTTPException(
+                status_code=400,
+                detail="OpenAI API key not configured. Please set the OPENAI_API_KEY environment variable."
+            )
+        
         # Create the prompt for AI fitness coach with comprehensive knowledge
         system_prompt = """You are an expert AI Fitness Coach with comprehensive knowledge of fitness, nutrition, exercise science, and wellness. You have access to the user's specific workout routine and body measurements, and you're here to guide them towards their fitness goals.
 
